@@ -1,37 +1,46 @@
-<html>
-	<head>
-		<title>Key Visualizer</title>
-	</head>
-	<body>
-		<canvas id="key" style="border:1px solid #d3d3d3;"></canvas>
-		<div id="make"></div>
-		<div id="bitting"></div>
-		<script>
-var make = "<?php echo $_GET["make"] ?? 'Kwikset' ?>";
-var bitting = "<?php echo $_GET["bitting"] ?? rand(9999,999999) ?>";
-var w = "<?php echo $_GET["w"] ?? 1000 ?>";
-var h = "<?php echo $_GET["h"] ?? 300 ?>";
-var line = document.getElementById("key").getContext("2d");
+<?php
+$make = $_GET["make"] ?? 'Kwikset';
+$bitting = $_GET["bitting"] ?? "0123456789";
+$guide = $_GET["guide"] ?? false;
+$w = $_GET["w"] ?? 1000;
+$h = $_GET["h"] ?? 250;
 
-document.getElementById("key").width = w;
-document.getElementById("key").height = h;
+$values = array();
 
-document.getElementById("make").innerText = make;
-document.getElementById("bitting").innerText = bitting;
+array_push($values, 0, 0);
 
-line.moveTo(0,0);
-
-for(i=0; i < bitting.length; i++) {
-	line.lineTo(w/(bitting.length+1)*(i+1), (Number(bitting.charAt(i))+1)*h/11);
-	console.log(bitting.charAt(i), w/(bitting.length+1)*(i+1), (Number(bitting.charAt(i))+1)*h/11);
-	console.log((Number(bitting.charAt(i))+1));
-	line.lineTo(w/(bitting.length+1)*(i+1.5), 0);
+for($i = 0; $i < strlen($bitting); $i++) {
+	array_push($values, $w/(strlen($bitting)+1)*($i+1), (intval($bitting{$i})+1)*$h/11);
+	if ($make == "Kwikset" || $make == "Weiser") {
+		array_push($values, $w/(strlen($bitting)+1)*($i+1.5), (intval($bitting{$i})+1)*$h/11);
+		//array_push($values, $w/(strlen($bitting)+1)*($i+1.9), (intval($bitting{$i})+1)*$h/11);
+	} else {
+		array_push($values, $w/(strlen($bitting)+1)*($i+1.5), 0);
+	}
 }
 
-line.lineTo(w,h);
-line.lineTo(0,h);
-line.fillStyle = "gray";
-line.fill();
-		</script>
-	</body>
-</html>
+if ($make == "Kwikset" || $make == "Weiser") {
+	array_push($values, $w, 0);
+}
+array_push($values, $w, $h);
+array_push($values, 0, $h);
+
+$image = imagecreatetruecolor($w, $h);
+
+imagesavealpha($image, true);
+imagefill($image, 0, 0, imagecolorallocatealpha($image, 0, 0, 0, 127));
+
+imagefilledpolygon($image, $values, count($values)/2, imagecolorallocate($image, 100, 100, 100));
+
+if ($guide) {
+	for($i = 1; $i <= 10; $i++) {
+		imageline($image, 0, $i*$h/11, $w , $i*$h/11, imagecolorallocate($image, 0, 0, 0));
+		imageline($image, 0, $i*$h/11, $w , $i*$h/11, imagecolorallocate($image, 0, 0, 0));
+	}
+}
+
+$file = 'Key.png';
+imagepng($image, $file);
+
+header('Location: ' . $file);
+?>
