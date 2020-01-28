@@ -2,6 +2,7 @@
 $make = $_GET["make"] ?? 'Kwikset';
 $bitting = $_GET["bitting"] ?? "0123456789";
 $guide = $_GET["guide"] ?? false;
+$direct = $_GET["direct"] ?? false;
 $w = $_GET["w"] ?? 1000;
 $h = $_GET["h"] ?? 250;
 
@@ -42,5 +43,12 @@ if ($guide) {
 $file = 'Key.png';
 imagepng($image, $file);
 
-header('Location: ' . $file);
+if ($direct) {
+	header('Location: ' . $file);
+} else {
+	echo '<html><header><title>Key Visualizer - ' . $make . ' ' . $bitting . '</title></header><body>
+		<img src="' . $file . '">
+		<div>' . $make . ' ' . $bitting . '</div>
+	</body></html>';
+}
 ?>
